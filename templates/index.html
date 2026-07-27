@@ -267,23 +267,38 @@
                 formData.append("file", fileInput.files[0]);
 
                 try {
+                    console.log("Sending request to:", `${BACKEND_URL}/predict`);
+                    
                     const response = await fetch(`${BACKEND_URL}/predict`, {
                         method: "POST",
-                        body: formData
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
                     });
 
+                    console.log("Response status:", response.status);
+                    console.log("Response headers:", response.headers);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
                     const data = await response.json();
+                    console.log("Response data:", data);
 
                     if (data.status === "success") {
-                        // Store prediction data and redirect to result page
+                        // Store prediction data in localStorage
                         localStorage.setItem("predictionData", JSON.stringify(data));
+                        // Redirect to local result page on frontend (Vercel)
                         window.location.href = "result.html";
                     } else {
-                        alert("Error: " + data.message);
+                        alert("Error: " + (data.message || "Unknown error occurred"));
                     }
                 } catch (error) {
+                    console.error("Full error object:", error);
+                    console.error("Error stack:", error.stack);
                     alert("Error communicating with backend: " + error.message);
-                    console.error("Error:", error);
                 }
             });
 
