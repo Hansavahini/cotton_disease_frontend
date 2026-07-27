@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert Consultation</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Inline CSS -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(120deg, #6a11cb, #2575fc);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 600;
+            margin: 0 0 10px;
+            line-height: 1.2;
+        }
+
+        p {
+            font-size: 1.25rem;
+            font-weight: 300;
+            margin: 0 0 20px;
+        }
+
+        #welcome-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            background: #ff7e5f;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        #welcome-btn:hover {
+            background: #ff6a4d;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            transform: scale(1.05);
+        }
+
+        .chat-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 450px;
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            background: #fff;
+            overflow: hidden;
+            display: none;
+        }
+
+        .chat-box.large {
+            width: 80%;
+            height: 80%;
+            bottom: 10%;
+            right: 10%;
+        }
+
+        .chat-box iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ff7e5f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-toggle img {
+            width: 30px;
+            height: 30px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Welcome to Virtual Assitant</h1>
+        <p>Your personal AI assistant is here to help you solve your queries with ease.</p>
+        <button id="welcome-btn">Get Started</button>
+    </div>
+
+    <!-- Chat Box -->
+    <div class="chat-box" id="chat-box">
+<iframe src="https://app.dante-ai.com/embed/?kb_id=ddd0859c-819e-4eb5-90ce-9066fca39f8e&token=d7c0b017-18f6-4214-9d26-64b5d18d4c15&modeltype=gpt-4-omnimodel-mini&tabs=false" allow="clipboard-write; clipboard-read; *;microphone *" width="100%" height="950" frameborder="0"></iframe>    </div>
+    <!-- Chat Toggle Button -->
+    <div class="chat-toggle" id="chat-toggle">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/chat.png" alt="Chat">
+    </div>
+    <!-- Scripts -->
+    <script src="https://app.dante-ai.com/bubble-embed.js?kb_id=ddd0859c-819e-4eb5-90ce-9066fca39f8e&token=d7c0b017-18f6-4214-9d26-64b5d18d4c15&modeltype=gpt-4-omnimodel-mini&tabs=false"></script>
+        <script>
+        const welcomeBtn = document.getElementById('welcome-btn');
+        const chatBox = document.getElementById('chat-box');
+        const chatToggle = document.getElementById('chat-toggle');
+
+        // Toggle chat box visibility
+        chatToggle.addEventListener('click', () => {
+            chatBox.style.display = chatBox.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Show large chat box on button click
+        welcomeBtn.addEventListener('click', () => {
+            chatBox.style.display = 'block';
+            chatBox.classList.add('large');
+        });
+    </script>
+</body>
+
+</html>
