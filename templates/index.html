@@ -244,68 +244,207 @@
     </footer>
 
     <script>
-        // Configuration - Update this with your Render backend URL
-        const BACKEND_URL = 'https://plantpulseai.onrender.com';
+        // ==========================================
+        // PlantPulse Backend Communication Logger
+        // ==========================================
         
-        // Script for File Upload Validation and API Call
+        // Configuration
+        const BACKEND_URL = 'https://plantpulseai-nmcz.onrender.com';
+        const PREDICT_ENDPOINT = '/predict';
+        
+        // Debug Logger utility
+        const DebugLog = {
+            logs: [],
+            init() {
+                console.log("%c=== PlantPulse Debug Logger Initialized ===", "color: #28a745; font-weight: bold; font-size: 14px");
+                console.log(`Backend URL: ${BACKEND_URL}`);
+                console.log(`Endpoint: ${PREDICT_ENDPOINT}`);
+                console.log("Open this page's debug-api-tester.html to visually test the backend");
+                console.log("Or press F12 to see console logs");
+            },
+            log(message, type = "info", data = null) {
+                const timestamp = new Date().toLocaleTimeString();
+                const prefix = {
+                    "info": "%c[INFO]",
+                    "success": "%c[SUCCESS]",
+                    "error": "%c[ERROR]",
+                    "warning": "%c[WARNING]",
+                    "request": "%c[REQUEST]",
+                    "response": "%c[RESPONSE]"
+                }[type] || "%c[LOG]";
+                
+                const color = {
+                    "info": "color: #61dafb",
+                    "success": "color: #28a745",
+                    "error": "color: #dc3545",
+                    "warning": "color: #ffc107",
+                    "request": "color: #00bfff",
+                    "response": "color: #32cd32"
+                }[type] || "color: #e0e0e0";
+                
+                console.log(`${prefix} ${timestamp}: ${message}`, color);
+                if (data) {
+                    console.log("  └─ Details:", data);
+                }
+                
+                this.logs.push({ timestamp, type, message, data });
+            }
+        };
+        
+        // Initialize logger
+        DebugLog.init();
+        
+        // Main upload handler
         document.addEventListener("DOMContentLoaded", function () {
             const fileInput = document.getElementById("file");
             const form = document.getElementById("uploadForm");
+            let isProcessing = false;
 
             form.addEventListener("submit", async function (event) {
                 event.preventDefault();
 
                 if (fileInput.files.length === 0) {
+                    DebugLog.log("No file selected", "warning");
                     alert("Please select an image to upload.");
                     return;
                 }
 
-                // Show loading message
-                alert("Processing image... Please wait.");
+                if (isProcessing) {
+                    DebugLog.log("Upload already in progress", "warning");
+                    alert("Please wait for the current upload to complete.");
+                    return;
+                }
+
+                isProcessing = true;
+                const file = fileInput.files[0];
+                const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                
+                DebugLog.log(`Starting upload`, "info", {
+                    name: file.name,
+                    type: file.type,
+                    size: `${fileSize} MB`,
+                    lastModified: new Date(file.lastModified).toISOString()
+                });
+
+                alert("Processing image... Please wait. This may take a moment.");
 
                 const formData = new FormData();
-                formData.append("file", fileInput.files[0]);
+                formData.append("file", file);
 
+                const endpoint = `${BACKEND_URL}${PREDICT_ENDPOINT}`;
+                
                 try {
-                    console.log("Sending request to:", `${BACKEND_URL}/predict`);
+                    DebugLog.log(`Sending POST request`, "request", {
+                        url: endpoint,
+                        method: "POST",
+                        contentType: "multipart/form-data"
+                    });
                     
-                    const response = await fetch(`${BACKEND_URL}/predict`, {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 60000);
+                    
+                    const response = await fetch(endpoint, {
                         method: "POST",
                         body: formData,
                         headers: {
                             'Accept': 'application/json'
-                        }
+                        },
+                        signal: controller.signal
                     });
 
-                    console.log("Response status:", response.status);
-                    console.log("Response headers:", response.headers);
+                    clearTimeout(timeoutId);
+
+                    DebugLog.log(`Received response`, "response", {
+                        status: response.status,
+                        statusText: response.statusText,
+                        contentType: response.headers.get('content-type'),
+                        corsOrigin: response.headers.get('access-control-allow-origin')
+                    });
 
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        if (response.status === 405) {
+                            throw new Error("405 Method Not Allowed - Backend endpoint doesn't accept POST");
+                        } else if (response.status === 404) {
+                            throw new Error("404 Not Found - Endpoint doesn't exist");
+                        } else if (response.status === 500) {
+                            throw new Error("500 Server Error - Backend processing failed");
+                        } else if (response.status === 503) {
+                            throw new Error("503 Unavailable - Backend may be sleeping (Render free tier)");
+                        } else {
+                            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+                        }
                     }
 
                     const data = await response.json();
-                    console.log("Response data:", data);
+                    
+                    DebugLog.log(`Prediction successful`, "success", {
+                        class: data.predicted_class,
+                        confidence: `${(data.confidence * 100).toFixed(2)}%`,
+                        hasSolutions: !!data.solutions,
+                        hasImageUrl: !!data.image_url
+                    });
 
                     if (data.status === "success") {
-                        // Store prediction data in localStorage
                         localStorage.setItem("predictionData", JSON.stringify(data));
-                        // Redirect to local result page on frontend (Vercel)
+                        DebugLog.log(`Data stored in localStorage, redirecting...`, "success");
                         window.location.href = "result.html";
                     } else {
-                        alert("Error: " + (data.message || "Unknown error occurred"));
+                        throw new Error(data.message || "Unknown error from backend");
                     }
+
                 } catch (error) {
-                    console.error("Full error object:", error);
-                    console.error("Error stack:", error.stack);
-                    alert("Error communicating with backend: " + error.message);
+                    isProcessing = false;
+                    
+                    DebugLog.log(`Request failed`, "error", {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack
+                    });
+
+                    let userMessage = error.message;
+                    if (error.name === "AbortError") {
+                        userMessage = "Request timeout (60s exceeded). Backend response too slow.";
+                    } else if (error.message.includes("Failed to fetch")) {
+                        userMessage = "Network error - Cannot reach backend. Check URL and CORS.";
+                    }
+                    
+                    alert(
+                        `Error: ${userMessage}\n\n` +
+                        `Backend: ${BACKEND_URL}\n` +
+                        `Endpoint: ${PREDICT_ENDPOINT}\n\n` +
+                        `Check F12 console for detailed logs.`
+                    );
                 }
             });
 
+            // File selection handler
             fileInput.addEventListener("change", function () {
-                if (fileInput.files.length > 0) {
-                    alert(`Image Uploaded Successfully: ${fileInput.files[0].name}`);
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    
+                    if (!validTypes.includes(file.type)) {
+                        DebugLog.log(`Invalid file type selected`, "warning", { type: file.type });
+                        alert(`Invalid file type: ${file.type}. Please upload JPG, PNG, GIF, or WebP.`);
+                        fileInput.value = '';
+                        return;
+                    }
+                    
+                    DebugLog.log(`Valid image selected`, "success", {
+                        name: file.name,
+                        type: file.type,
+                        size: `${(file.size / 1024).toFixed(2)} KB`
+                    });
+                    
+                    alert(`Image selected: ${file.name}`);
                 }
+            });
+
+            // Log initial state
+            DebugLog.log(`Page loaded and ready`, "success", {
+                backend: BACKEND_URL,
+                endpoint: PREDICT_ENDPOINT,
+                fullUrl: `${BACKEND_URL}${PREDICT_ENDPOINT}`
             });
         });
     </script>
