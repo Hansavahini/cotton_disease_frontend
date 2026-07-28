@@ -1,24 +1,23 @@
 {
-  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/",
       "destination": "/templates/index.html"
     },
     {
-      "source": "/result",
+      "source": "/result.html",
       "destination": "/templates/result.html"
     },
     {
-      "source": "/learn",
+      "source": "/learn.html",
       "destination": "/templates/learn.html"
     },
     {
-      "source": "/weather",
+      "source": "/weather.html",
       "destination": "/templates/weather.html"
     },
     {
-      "source": "/al",
+      "source": "/al.html",
       "destination": "/templates/al.html"
     }
   ]
