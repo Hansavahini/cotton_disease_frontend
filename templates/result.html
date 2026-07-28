@@ -286,9 +286,9 @@
             // Display confidence score
             const confidence = (predictionData.confidence * 100).toFixed(2);
             document.getElementById("confidenceScore").textContent = `Confidence: ${confidence}%`;
-
+            const BACKEND_URL = "https://plantpulseai-nmcz.onrender.com";
+            const imageUrl = `${BACKEND_URL}${predictionData.image_url}`;
             // Display uploaded image
-            const imageUrl = `${predictionData.image_url}`;
             document.getElementById("uploadedImage").src = imageUrl;
 
             // Get solutions from the backend response
@@ -413,8 +413,7 @@
                     productsHTML += `
                         <div class="col-md-6">
                             <div class="card text-center shadow-sm product-card">
-                                <img src="${product.image_url || 'default.jpg'}" alt="${product.name || 'No Name'}">
-                                <div class="card-body">
+                                <img src="${BACKEND_URL}${product.image_url}">                                <div class="card-body">
                                     <h5 class="card-title">${product.name || 'No Name'}</h5>
                                     <a href="${product.url || '#'}" class="btn btn-primary" target="_blank">View Product</a>
                                 </div>
