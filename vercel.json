@@ -1,9 +1,25 @@
 {
-  "outputDirectory": "templates",
+  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/$1"
+      "source": "/",
+      "destination": "/templates/index.html"
+    },
+    {
+      "source": "/result",
+      "destination": "/templates/result.html"
+    },
+    {
+      "source": "/learn",
+      "destination": "/templates/learn.html"
+    },
+    {
+      "source": "/weather",
+      "destination": "/templates/weather.html"
+    },
+    {
+      "source": "/al",
+      "destination": "/templates/al.html"
     }
   ]
 }
