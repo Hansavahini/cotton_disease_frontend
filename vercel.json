@@ -2,23 +2,23 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/templates/index.html"
+      "destination": "/index.html"
     },
     {
       "source": "/result.html",
-      "destination": "/templates/result.html"
+      "destination": "/result.html"
     },
     {
       "source": "/learn.html",
-      "destination": "/templates/learn.html"
+      "destination": "/learn.html"
     },
     {
       "source": "/weather.html",
-      "destination": "/templates/weather.html"
+      "destination": "/weather.html"
     },
     {
       "source": "/al.html",
-      "destination": "/templates/al.html"
+      "destination": "/al.html"
     }
   ]
 }
